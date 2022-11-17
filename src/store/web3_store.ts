@@ -1,5 +1,6 @@
 import { ethers } from "ethers";
 import create from "zustand";
+import { fetchContracts } from "../utils/fetch_contracts";
 import { defaultChainId, supportedNetworks } from "../utils/network_config";
 
 const web3Store = (set: any, get: any) => ({
@@ -26,10 +27,13 @@ const web3Store = (set: any, get: any) => ({
         throw new Error("Use Correct Network");
       }
 
+      const contracts = await fetchContracts(signer, chainId);
+
       set({
         accounts,
         chainId,
         provider,
+        ...contracts,
       });
     } catch (e: any) {
       set({ error: e.message });

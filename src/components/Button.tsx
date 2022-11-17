@@ -18,7 +18,7 @@ export const Button = ({}: ButtonProps) => {
       {address ? (
         <div className="flex space-x-2">
           <div className="hidden sm:block tracking-wider px-4 py-2  rounded-lg backdrop-blur-sm bg-opacity-20 bg-white">
-            {parseFloat("10").toFixed(2)} ETH
+            {parseFloat("10").toFixed(2)} TRX
           </div>
           <div
             className="hidden cursor-copy sm:block tracking-wider px-4 py-2  rounded-lg backdrop-blur-sm bg-opacity-20 bg-white"
