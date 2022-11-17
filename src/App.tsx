@@ -3,23 +3,13 @@ import { Button } from "./components/Button";
 import Game from "./components/Game";
 import logo from "./assets/logo.png";
 import { MobileView } from "react-device-detect";
+import { scrollToGame } from "./utils/helper";
 
 function App() {
-  const gameRef = React.useRef<HTMLDivElement>(null);
-
-  const scrollToGame = () => {
-    if (gameRef && gameRef.current) {
-      window.scrollTo({
-        behavior: "smooth",
-        top: gameRef.current.offsetTop - 20,
-      });
-    }
-  };
+  const ref = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
-    setTimeout(() => {
-      scrollToGame();
-    }, 1700);
+    setTimeout(() => scrollToGame(ref), 1700);
   }, []);
 
   return (
@@ -56,7 +46,7 @@ function App() {
 
         <div className="my-8"></div>
 
-        <div className="max-w-sm mx-auto " ref={gameRef}>
+        <div className="max-w-sm mx-auto " ref={ref}>
           <Game />
         </div>
 
