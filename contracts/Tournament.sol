@@ -1,195 +1,295 @@
 // SPDX-License-Identifier: agpl-3.0
 pragma solidity ^0.8.0;
 
-import { ReentrancyGuard } from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import { EnumerableSet } from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
-import { PercentageMath } from "./math/PercentageMath.sol";
-import { WadRayMath } from "./math/WadRayMath.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
-import "./ToTheMooon.sol";
-
+import {IToTheMooon} from "./interfaces/IToTheMooon.sol";
+import {ITournament} from "./interfaces/ITournament.sol";
+import {PercentageMath} from "./math/PercentageMath.sol";
+import {WadRayMath} from "./math/WadRayMath.sol";
+import {Errors} from "./utils/Errors.sol";
+import {DataTypes} from "./utils/DataTypes.sol";
 
 /**
  * @title Tournament contract
  * @author Sumit Mahajan
- * @dev Handles Tournament logic for sponsored and daily tournaments of ToTheMooon
+ * @dev Handles Tournament logic for sponsored and daily tournaments of IToTheMooon
  **/
-contract Tournament is ReentrancyGuard {
+contract Tournament is ITournament, ReentrancyGuard {
     using EnumerableSet for EnumerableSet.AddressSet;
-    using PercentageMath for uint;
-    using WadRayMath for uint;
 
-    struct PlayerStats {
-        
-        uint rank;
+    using PercentageMath for uint256;
+    using WadRayMath for uint256;
 
-        uint highscore;
-
-        uint allocatedPrize;
-
-        uint unclaimedPrize;
-    }
-    
-    struct LeaderBoardEntry {
-        
-        address wallet;
-        
-        string username;
-        
-        uint highscore;
-        
-        uint prize;
-    }
-
-    uint public id;
+    uint256 public id;
 
     string public name;
 
-    uint public startTime;
+    uint256 public startTime;
 
-    uint public timeLimit;
+    uint256 public timeLimit;
 
-    uint public joiningFees;
-    
-    address public gameContract;
-    
+    uint256 public joiningFees;
+
+    address public gameContractAddress;
+
     address public approvedCaller;
-    
-    RewardVars public rewardVars;
+
+    bool public override hasEnded;
+
+    DataTypes.RewardVars public rewardVars;
 
     EnumerableSet.AddressSet playerListSet;
 
-    mapping(address => PlayerStats) public playerStatsMap;
+    mapping(address => DataTypes.PlayerStats) public playerStatsMap;
+
+    event ScoreRecorded(
+        address indexed player,
+        uint256 indexed timestamp,
+        uint256 score
+    );
 
     constructor(
-        uint id_, string memory name_, uint startTime_, address gameContract_,  RewardVars memory _rewardVars
+        uint256 id_,
+        string memory name_,
+        uint256 startTime_,
+        address gameContractAddress_,
+        DataTypes.RewardVars memory _rewardVars
     ) {
         id = id_;
         name = name_;
         startTime = startTime_;
-        gameContract = gameContract_;
-        timeLimit = ToTheMooon(gameContract).timeLimit();
-        joiningFees = ToTheMooon(gameContract).joiningFees();
-        approvedCaller = ToTheMooon(gameContract).owner();
+        gameContractAddress = gameContractAddress_;
+        timeLimit = IToTheMooon(gameContractAddress).timeLimit();
+        joiningFees = IToTheMooon(gameContractAddress).joiningFees();
+        approvedCaller = IToTheMooon(gameContractAddress).getOwner();
         rewardVars = _rewardVars;
     }
-    
+
     modifier onlyApprovedCaller() {
-        require(msg.sender == approvedCaller, "Not authorized");
+        require(msg.sender == approvedCaller, Errors.CALLER_NOT_AUTHORIZED);
         _;
     }
-    
-    function getLeaderBoard() public view returns(LeaderBoardEntry[] memory) {
-        LeaderBoardEntry[] memory leaderboardTemp = new LeaderBoardEntry[](playerListSet.length());
-        
-        for(uint i=0; i<playerListSet.length(); i++) {
-            ( , string memory username) = ToTheMooon(gameContract).isPlayerRegistered(msg.sender);
-            
-            leaderboardTemp[i] = LeaderBoardEntry(
+
+    function getRewardInfo()
+        public
+        view
+        override
+        returns (
+            DataTypes.RewardVars memory,
+            uint256,
+            uint256
+        )
+    {
+        return (
+            DataTypes.RewardVars(
+                rewardVars.isSponsored,
+                rewardVars.isSponsored
+                    ? rewardVars.prizePool
+                    : playerListSet.length() *
+                        joiningFees -
+                        (playerListSet.length() * joiningFees).percentMul(
+                            rewardVars.commissionPercentage
+                        ),
+                min(
+                    playerListSet.length().percentMul(
+                        IToTheMooon(gameContractAddress).winnersPercentage()
+                    ),
+                    rewardVars.isSponsored
+                        ? rewardVars.nWinners
+                        : IToTheMooon(gameContractAddress).winnersPercentage() /
+                            10
+                ),
+                rewardVars.sponsorMetadata,
+                rewardVars.commissionPercentage
+            ),
+            joiningFees,
+            playerListSet.length()
+        );
+    }
+
+    function getLeaderBoard()
+        public
+        view
+        override
+        returns (DataTypes.LeaderBoardEntry[] memory)
+    {
+        DataTypes.LeaderBoardEntry[]
+            memory leaderboardTemp = new DataTypes.LeaderBoardEntry[](
+                playerListSet.length()
+            );
+
+        if (playerListSet.length() == 0) {
+            return leaderboardTemp;
+        }
+
+        for (uint256 i = 0; i < playerListSet.length(); i++) {
+            leaderboardTemp[i] = DataTypes.LeaderBoardEntry(
                 playerListSet.at(i),
-                username,
+                IToTheMooon(gameContractAddress).getUserName(
+                    playerListSet.at(i)
+                ),
                 playerStatsMap[playerListSet.at(i)].highscore,
                 0
             );
-            
         }
-        
-        leaderboardTemp = quickSort(leaderboardTemp, 0, int256(playerListSet.length()-1));
-        
-        RewardVars memory currentRewardVars = RewardVars(
-            rewardVars.isSponsored,
-            rewardVars.isSponsored ? rewardVars.prizePool
-            : playerListSet.length() * joiningFees 
-            - (playerListSet.length() * joiningFees).percentMul(rewardVars.commissionPercentage),
-            min(
-                playerListSet.length().percentMul(ToTheMooon(gameContract).winnersPercentage()),
-                rewardVars.isSponsored ? rewardVars.nWinners : ToTheMooon(gameContract).winnersPercentage() / 10
-            ),
-            rewardVars.sponsorMetadata,
-            rewardVars.commissionPercentage
+
+        leaderboardTemp = quickSort(
+            leaderboardTemp,
+            0,
+            int256(playerListSet.length() - 1)
         );
-        
-        uint r = getRValue(playerListSet.length());
-        
-        uint a = currentRewardVars.prizePool * (r - 1e6) / (pow(r, currentRewardVars.nWinners) - 1e6);
-        
-        for(uint i=0; i<playerListSet.length(); i++) {
-            leaderboardTemp[i].prize = a * pow(r,i);
+
+        (DataTypes.RewardVars memory currentRewardVars, , ) = getRewardInfo();
+
+        uint256 r = getRValue(playerListSet.length());
+
+        uint256 a = (currentRewardVars.prizePool.wadMul(r - 1e18)).wadDiv(
+            pow(r, currentRewardVars.nWinners) - 1e18
+        );
+
+        for (uint256 i = 0; i < playerListSet.length(); i++) {
+            leaderboardTemp[i].prize = a.wadMul(
+                pow(r, (currentRewardVars.nWinners - i - 1))
+            );
         }
-        
+
         return leaderboardTemp;
     }
 
-    function joinTournament() external payable {
-        require(startTime + timeLimit > block.timestamp, "Tournament has ended");
-        
-        (bool hasPlayerRegistered, ) = ToTheMooon(gameContract).isPlayerRegistered(msg.sender);
-        require(hasPlayerRegistered, "Player not registered");
-        
-        require(msg.value == joiningFees, "Joining Fees not provided");
+    function joinTournament() external payable override {
+        require(
+            startTime + timeLimit > block.timestamp,
+            Errors.TOURNAMENT_HAS_ENDED
+        );
+
+        require(msg.value == joiningFees, Errors.NOT_ENOUGH_FUNDS_PROVIDED);
 
         playerListSet.add(msg.sender);
+        playerStatsMap[msg.sender].attemptsLeft = 3;
+        IToTheMooon(gameContractAddress).addPlayerToTournament(msg.sender);
     }
 
-    function recordScore(address _player, uint _score) external onlyApprovedCaller {
-        require(startTime + timeLimit > block.timestamp, "Tournament has ended");
-        
+    function reFill() external payable override {
+        require(
+            startTime + timeLimit > block.timestamp,
+            Errors.TOURNAMENT_HAS_ENDED
+        );
+
+        bool hasPlayerJoined = IToTheMooon(gameContractAddress)
+            .hasJoinedTournament(msg.sender, id);
+        require(hasPlayerJoined, Errors.PLAYER_NOT_JOINED);
+
+        require(msg.value == joiningFees, Errors.NOT_ENOUGH_FUNDS_PROVIDED);
+
+        require(
+            playerStatsMap[msg.sender].attemptsLeft == 0,
+            Errors.ATTEMPTS_LEFT
+        );
+
+        playerStatsMap[msg.sender].attemptsLeft = 3;
+    }
+
+    function recordScore(address _player, uint256 _score)
+        external
+        override
+        onlyApprovedCaller
+    {
+        require(
+            startTime + timeLimit > block.timestamp,
+            Errors.TOURNAMENT_HAS_ENDED
+        );
+
+        bool hasPlayerJoined = IToTheMooon(gameContractAddress)
+            .hasJoinedTournament(_player, id);
+        require(hasPlayerJoined, Errors.PLAYER_NOT_JOINED);
+
+        require(
+            playerStatsMap[_player].attemptsLeft > 0,
+            Errors.NO_ATTEMPTS_LEFT
+        );
+
         playerStatsMap[_player].highscore = _score;
+        playerStatsMap[_player].attemptsLeft--;
+
+        emit ScoreRecorded(_player, block.timestamp, _score);
     }
 
-    function endTournament() external onlyApprovedCaller {
-        require(startTime + timeLimit < block.timestamp, "Tournament is still live");
-        
-        LeaderBoardEntry[] memory leaderboardTemp = getLeaderBoard();
-        
-        for(uint i=0; i<playerListSet.length(); i++) {
-            playerStatsMap[leaderboardTemp[i].wallet] = PlayerStats(
-                i+1,
+    function endTournament() external override onlyApprovedCaller {
+        require(
+            startTime + timeLimit < block.timestamp,
+            Errors.TOURNAMENT_IS_LIVE
+        );
+
+        hasEnded = true;
+
+        DataTypes.LeaderBoardEntry[] memory leaderboardTemp = getLeaderBoard();
+
+        for (uint256 i = 0; i < playerListSet.length(); i++) {
+            playerStatsMap[leaderboardTemp[i].wallet] = DataTypes.PlayerStats(
+                i + 1,
                 leaderboardTemp[i].highscore,
+                playerStatsMap[leaderboardTemp[i].wallet].attemptsLeft,
+                playerStatsMap[leaderboardTemp[i].wallet].reFills,
                 leaderboardTemp[i].prize,
                 leaderboardTemp[i].prize
             );
         }
     }
-    
-    function withdrawPrize() external {
-        PlayerStats storage player = playerStatsMap[msg.sender];
-        
-        if(player.unclaimedPrize > 0) {
+
+    function withdrawPrize() external override {
+        require(
+            startTime + timeLimit < block.timestamp,
+            Errors.TOURNAMENT_IS_LIVE
+        );
+
+        bool hasPlayerJoined = IToTheMooon(gameContractAddress)
+            .hasJoinedTournament(msg.sender, id);
+        require(hasPlayerJoined, Errors.PLAYER_NOT_JOINED);
+
+        DataTypes.PlayerStats storage player = playerStatsMap[msg.sender];
+
+        if (player.unclaimedPrize > 0) {
             player.unclaimedPrize = 0;
             payable(msg.sender).transfer(player.unclaimedPrize);
         }
     }
-    
-    function getRValue(uint nPlayers) internal view returns(uint) {
-        if(nPlayers < 10) {
-            return ToTheMooon(gameContract).r_values(10);
-        } else if(nPlayers < 20) {
-            return ToTheMooon(gameContract).r_values(20);
-        } else if(nPlayers < 30) {
-            return ToTheMooon(gameContract).r_values(30);
-        } else if(nPlayers < 40) {
-            return ToTheMooon(gameContract).r_values(40);
-        } else if(nPlayers < 50) {
-            return ToTheMooon(gameContract).r_values(50);
-        } else if(nPlayers < 100) {
-            return ToTheMooon(gameContract).r_values(100);
+
+    function getRValue(uint256 nPlayers) internal view returns (uint256) {
+        if (nPlayers < 10) {
+            return IToTheMooon(gameContractAddress).r_values(10);
+        } else if (nPlayers < 20) {
+            return IToTheMooon(gameContractAddress).r_values(20);
+        } else if (nPlayers < 30) {
+            return IToTheMooon(gameContractAddress).r_values(30);
+        } else if (nPlayers < 40) {
+            return IToTheMooon(gameContractAddress).r_values(40);
+        } else if (nPlayers < 50) {
+            return IToTheMooon(gameContractAddress).r_values(50);
+        } else if (nPlayers < 100) {
+            return IToTheMooon(gameContractAddress).r_values(100);
         } else {
-            return ToTheMooon(gameContract).r_values(1000);
+            return IToTheMooon(gameContractAddress).r_values(1000);
         }
     }
-    
-    function quickSort(LeaderBoardEntry[] memory leaderboardTemp, int256 left, int256 right) 
-        internal view returns(LeaderBoardEntry[] memory) 
-    {
+
+    function quickSort(
+        DataTypes.LeaderBoardEntry[] memory leaderboardTemp,
+        int256 left,
+        int256 right
+    ) internal view returns (DataTypes.LeaderBoardEntry[] memory) {
         if (left >= right) return leaderboardTemp;
-        uint256 pivot = leaderboardTemp[uint256(left + (right - left) / 2)].highscore;
+        uint256 pivot = leaderboardTemp[uint256(left + (right - left) / 2)]
+            .highscore;
         (int256 i, int256 j) = (left, right);
         while (i <= j) {
             while (leaderboardTemp[uint256(i)].highscore > pivot) i++;
             while (pivot > leaderboardTemp[uint256(j)].highscore) j--;
             if (i <= j) {
-                LeaderBoardEntry memory tmp = leaderboardTemp[uint256(i)];
+                DataTypes.LeaderBoardEntry memory tmp = leaderboardTemp[
+                    uint256(i)
+                ];
                 leaderboardTemp[uint256(i)] = leaderboardTemp[uint256(j)];
                 leaderboardTemp[uint256(j)] = tmp;
                 i++;
@@ -198,23 +298,22 @@ contract Tournament is ReentrancyGuard {
         }
         if (left < j) quickSort(leaderboardTemp, left, j);
         if (i < right) quickSort(leaderboardTemp, i, right);
-        
+
         return leaderboardTemp;
     }
-    
-    function min(uint a, uint b) internal pure returns(uint) {
-        if(a > b) {
+
+    function min(uint256 a, uint256 b) internal pure returns (uint256) {
+        if (a > b) {
             return b;
         }
         return a;
     }
-    
-    function pow(uint a, uint b) internal pure returns(uint) {
-        uint ans = a;
-        for(uint i=0; i<b; i++) {
+
+    function pow(uint256 a, uint256 b) internal pure returns (uint256) {
+        uint256 ans = a;
+        for (uint256 i = 0; i < b; i++) {
             ans = ans.wadMul(a);
         }
         return ans;
     }
-
 }

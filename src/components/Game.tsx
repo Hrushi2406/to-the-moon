@@ -1,6 +1,7 @@
-import { log } from "console";
 import { useCallback, useEffect, useState } from "react";
 import { Unity, useUnityContext } from "react-unity-webgl";
+import { useTournament } from "../store/use_tournament";
+import { useWeb3 } from "../store/web3_store";
 import "../styles/game.css";
 
 type GameProps = {};
@@ -8,6 +9,23 @@ type GameProps = {};
 function Game({}: GameProps) {
   const [score, setScore] = useState(0);
   const [gameOver, setGameOver] = useState(false);
+  const tournaments = useTournament();
+  const getTournamentInfo = useWeb3((state) => state.getTournamentInfo);
+
+  const checkHasJoinedTournament = useWeb3(
+    (state) => state.checkHasJoinedTournament
+  );
+
+  const hasJoinedTournament = true;
+  //const hasJoinedTournament = useWeb3((state) => state.hasJoinedTournament);
+
+  const tournament = useWeb3((state) => state.tournament);
+
+  useEffect(() => {
+    //tournaments.join();
+    getTournamentInfo();
+    checkHasJoinedTournament();
+  }, [tournament]);
 
   const {
     unityProvider,
@@ -51,14 +69,29 @@ function Game({}: GameProps) {
       )}
 
       {gameOver ? (
-        <div className="overlay ">
-          <div className="flex items-center justify-center flex-col h-full">
-            <h6 className="mx-auto text-center text-2xl ">Game Over</h6>
-            <p className="mx-auto text-center text-6xl ">{score}</p>
-            <div className="my-2"></div>
-            <GameStartPage handleRestart={handleRestart} />
+        hasJoinedTournament ? (
+          <div className="overlay ">
+            <div className="flex items-center justify-center flex-col h-full">
+              <h6 className="mx-auto text-center text-2xl ">Game Over</h6>
+              <p className="mx-auto text-center text-6xl ">{score}</p>
+              <div className="my-2"></div>
+              <h6 className="mx-auto text-center text-2xl ">Highscore</h6>
+              <p className="mx-auto text-center text-6xl ">{score}</p>
+              <p>Do you want to submit this score for tournament? </p>
+              <p>Only 3 submission left </p>
+              <GameStartPage handleRestart={handleRestart} />
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="overlay ">
+            <div className="flex items-center justify-center flex-col h-full">
+              <h6 className="mx-auto text-center text-2xl ">Game Over</h6>
+              <p className="mx-auto text-center text-6xl ">{score}</p>
+              <div className="my-2"></div>
+              <GameStartPage handleRestart={handleRestart} />
+            </div>
+          </div>
+        )
       ) : (
         <></>
       )}
@@ -74,15 +107,11 @@ const GameStartPage = ({ handleRestart }: { handleRestart: any }) => {
   return (
     <>
       <button className="primary-button" onClick={handleRestart}>
-        Play for Free
+        Play to earn ETH
       </button>
       <div className="my-2"></div>
-      <button
-        className="disabled-button"
-        onClick={handleRestart}
-        disabled={true}
-      >
-        Play to earn $TRON (soon)
+      <button className="disabled-button" onClick={handleRestart}>
+        Play for Free
       </button>
     </>
   );

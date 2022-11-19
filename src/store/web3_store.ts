@@ -1,13 +1,88 @@
 import { ethers } from "ethers";
 import create from "zustand";
 import { fetchContracts } from "../utils/fetch_contracts";
+import { formatBigNum } from "../utils/helper";
 import { defaultChainId, supportedNetworks } from "../utils/network_config";
 
 const web3Store = (set: any, get: any) => ({
   ethers: ethers,
   chainId: defaultChainId,
   accounts: [],
+  signer: null,
+  toTheMoon: null,
+  tournament: null,
+  currentTournament: null,
+  hasJoinedTournament: false,
+  hasRegistered: false,
   error: "",
+  leaderboard: [],
+
+  getLeaderBoard: async () => {
+    const data = await get().tournament.getLeaderBoard();
+    let tempArr: any = [];
+
+    data.forEach((arr: any) => {
+      tempArr.push({
+        address: arr[0],
+        name: arr[1],
+        highscore: arr[2].toString(),
+        prize: formatBigNum(arr[3]),
+      });
+    });
+
+    set({ leaderboard: tempArr });
+  },
+
+  getTournamentInfo: async () => {
+    const name = await get().tournament.name();
+    const timeLimit = await get().tournament.timeLimit();
+    let startTime = await get().tournament.startTime();
+    const info = await get().tournament.getRewardInfo();
+    const joiningFee = ethers.utils.formatEther(info[1]).toString();
+    const playersJoined = info[2].toString();
+    const { prizePool, commissionPercentage, isSponsored } = info[0];
+    const endsInNum = startTime.toNumber() + timeLimit.toNumber();
+
+    const endsIn = new Date(endsInNum * 1000);
+
+    set({
+      currentTournament: {
+        joiningFee,
+        playersJoined,
+        isSponsored,
+        name,
+        endsIn,
+        commissionPercentage: commissionPercentage.toNumber(),
+        prizePool: ethers.utils.formatEther(prizePool),
+      },
+    });
+
+    console.log(
+      "commissionPercentage.toNumber(): ",
+      commissionPercentage.toNumber()
+    );
+  },
+
+  checkHasRegistered: async () => {
+    const isPlayerRegistered = (
+      await get().toTheMoon.isPlayerRegistered(get().accounts[0])
+    )[0];
+
+    set({ hasRegistered: isPlayerRegistered });
+  },
+
+  checkHasJoinedTournament: async () => {
+    const tournaments = await get().toTheMoon.getJoinedTournamentsByPlayer(
+      get().accounts[0]
+    );
+    const tId = await get().toTheMoon.currentTournamentId();
+
+    const hasJoinedTournament = tournaments.some(
+      (t: any) => t[0].toString() == tId.toString()
+    );
+
+    set({ hasJoinedTournament });
+  },
 
   connectWallet: async () => {
     try {
@@ -32,15 +107,26 @@ const web3Store = (set: any, get: any) => ({
       set({
         accounts,
         chainId,
-        provider,
+        signer,
         ...contracts,
       });
+      get().getLeaderBoard();
     } catch (e: any) {
       set({ error: e.message });
 
       console.log("useWeb3 : connectWallet failed -> " + e.message);
     }
   },
+
+  joinTournament: () => {},
+
+  // joinTournament: async () => {
+  //   const isPlayerRegistered = await get().toTheMoon.isPlayerRegistered(
+  //     get().accounts[0]
+  //   );
+
+  //   console.log("isPlayerRegistered: ", isPlayerRegistered);
+  // },
 });
 
 export const useWeb3 = create(web3Store);

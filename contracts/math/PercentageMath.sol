@@ -60,4 +60,3 @@ library PercentageMath {
         return (value * PERCENTAGE_FACTOR + halfPercentage) / percentage;
     }
 }
-

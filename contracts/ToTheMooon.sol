@@ -6,99 +6,146 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 
-import "./Tournament.sol";
+import {IToTheMooon} from "./interfaces/IToTheMooon.sol";
+import {ITournament} from "./interfaces/ITournament.sol";
+import {Tournament} from "./Tournament.sol";
+import {Errors} from "./utils/Errors.sol";
+import {DataTypes} from "./utils/DataTypes.sol";
 
 /**
  * @title ToTheMooon contract
  * @author Sumit Mahajan
  * @dev Primary contract for the ToTheMoon game
  **/
-contract ToTheMooon is Ownable, ReentrancyGuard {
-    using EnumerableSet for EnumerableSet.AddressSet;
+contract ToTheMooon is IToTheMooon, Ownable, ReentrancyGuard {
+    using EnumerableSet for EnumerableSet.UintSet;
     using EnumerableSet for EnumerableSet.Bytes32Set;
 
     using Strings for string;
 
-    struct PlayerStruct {
-        bool hasRegistered;
-        string username;
-        EnumerableSet.AddressSet tournaments;
-    }
-
-    struct TournamentStruct {
-        string name;
-        uint256 startTime;
-        address contractAddress;
-        RewardVars rewardVars;
-    }
-
-    mapping(address => PlayerStruct) players;
+    mapping(address => DataTypes.PlayerStruct) players;
 
     EnumerableSet.Bytes32Set usernames;
 
-    mapping(uint256 => TournamentStruct) public tournaments;
+    mapping(uint => DataTypes.TournamentStruct) public tournaments;
 
-    mapping(uint256 => uint256) public r_values;
+    mapping(uint => uint) public override r_values;
 
-    uint256 public currentTournamentId;
+    uint public currentTournamentId;
 
-    uint256 public timeLimit = 86400;
+    uint public override timeLimit = 300;
 
-    uint256 public joiningFees = 10 wei;
+    uint public override joiningFees = 1 ether;
 
-    uint256 public winnersPercentage = 6900;
+    uint public override winnersPercentage = 6900;
 
     constructor() {
-        r_values[10] = 1.15e6;
-        r_values[20] = 1.075e6;
-        r_values[30] = 1.05e6;
-        r_values[40] = 1.025e6;
-        r_values[50] = 1.02e6;
-        r_values[100] = 1.01e6;
-        r_values[1000] = 1.005e6;
+        r_values[10] = 1.15e18;
+        r_values[20] = 1.075e18;
+        r_values[30] = 1.05e18;
+        r_values[40] = 1.025e18;
+        r_values[50] = 1.02e18;
+        r_values[100] = 1.01e18;
+        r_values[1000] = 1.005e18;
     }
 
-    function isPlayerRegistered(address wallet_)
+    function getOwner() public view override returns (address) {
+        return owner();
+    }
+
+    function getJoinedTournamentsByPlayer(address _player)
         external
         view
-        returns (bool, string memory)
+        override
+        returns (DataTypes.TournamentStruct[] memory)
     {
-        PlayerStruct storage player = players[wallet_];
-        return (player.hasRegistered, player.username);
+        DataTypes.TournamentStruct[]
+            memory pTournaments = new DataTypes.TournamentStruct[](
+                currentTournamentId
+            );
+
+        for (uint i = 0; i < players[_player].tournamentIds.length(); i++) {
+            pTournaments[i] = tournaments[players[_player].tournamentIds.at(i)];
+        }
+
+        return pTournaments;
     }
 
-    function register(string memory _name, uint256 _strlen) external {
+    function hasJoinedTournament(address _wallet, uint tournamentId)
+        external
+        view
+        override
+        returns (bool)
+    {
+        return players[_wallet].tournamentIds.contains(tournamentId);
+    }
+
+    function getUserName(address wallet_)
+        external
+        view
+        override
+        returns (string memory)
+    {
+        DataTypes.PlayerStruct storage player = players[wallet_];
+        return player.username;
+    }
+
+    function setUserName(string memory _name, uint _strlen) external override {
         require(
             !usernames.contains(keccak256(abi.encodePacked(_name))),
-            "Username already taken"
+            Errors.USERNAME_TAKEN
         );
 
-        PlayerStruct storage player = players[msg.sender];
+        DataTypes.PlayerStruct storage player = players[msg.sender];
+
+        usernames.remove(keccak256(abi.encodePacked(player.username)));
+        usernames.add(keccak256(abi.encodePacked(_name)));
+
+        player.username = _strlen > 20 ? substring(_name, 0, 20) : _name;
+    }
+
+    function addPlayerToTournament(address _playerAddress) external override {
+        require(
+            msg.sender == tournaments[currentTournamentId].contractAddress,
+            Errors.CALLER_NOT_AUTHORIZED
+        );
+
+        DataTypes.PlayerStruct storage player = players[_playerAddress];
+
+        player.tournamentIds.add(currentTournamentId);
+
         if (!player.hasRegistered) {
-            usernames.add(keccak256(abi.encodePacked(_name)));
-            player.username = _strlen > 20 ? substring(_name, 0, 20) : _name;
             player.hasRegistered = true;
         }
     }
 
     function createTournament(
         string memory _name,
-        RewardVars memory _rewardVars
-    ) external payable onlyOwner {
+        DataTypes.RewardVars memory _rewardVars
+    ) external payable override onlyOwner {
         require(
-            tournaments[currentTournamentId].startTime + timeLimit <
-                block.timestamp,
-            "Tournament is still live"
+            currentTournamentId == 0 ||
+                (tournaments[currentTournamentId].startTime + timeLimit <
+                    block.timestamp &&
+                    ITournament(
+                        tournaments[currentTournamentId].contractAddress
+                    ).hasEnded()),
+            Errors.TOURNAMENT_IS_LIVE
+        );
+        require(
+            _rewardVars.isSponsored ? msg.value == _rewardVars.prizePool : true,
+            Errors.NOT_ENOUGH_FUNDS_PROVIDED
         );
 
-        Tournament tournament = new Tournament(
+        ITournament tournament = new Tournament(
             ++currentTournamentId,
             _name,
             block.timestamp,
             address(this),
             _rewardVars
         );
-        tournaments[currentTournamentId] = TournamentStruct(
+        tournaments[currentTournamentId] = DataTypes.TournamentStruct(
+            currentTournamentId,
             _name,
             block.timestamp,
             address(tournament),
@@ -106,33 +153,24 @@ contract ToTheMooon is Ownable, ReentrancyGuard {
         );
     }
 
-    function setTimeLimit(uint256 timeLimit_) external onlyOwner {
+    function setTimeLimit(uint timeLimit_) external override onlyOwner {
         timeLimit = timeLimit_;
     }
 
-    function setJoiningFees(uint256 joiningFees_) external onlyOwner {
+    function setJoiningFees(uint joiningFees_) external override onlyOwner {
         joiningFees = joiningFees_;
     }
 
     function substring(
         string memory str,
-        uint256 startIndex,
-        uint256 endIndex
+        uint startIndex,
+        uint endIndex
     ) internal pure returns (string memory) {
         bytes memory strBytes = bytes(str);
         bytes memory result = new bytes(endIndex - startIndex);
-        for (uint256 i = startIndex; i < endIndex; i++) {
+        for (uint i = startIndex; i < endIndex; i++) {
             result[i - startIndex] = strBytes[i];
         }
         return string(result);
     }
 }
-
-struct RewardVars {
-    bool isSponsored;
-    uint256 prizePool;
-    uint256 nWinners;
-    string sponsorMetadata;
-    uint256 commissionPercentage;
-}
-

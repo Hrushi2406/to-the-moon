@@ -10,7 +10,7 @@ export const Button = ({}: ButtonProps) => {
   const address = useWeb3((state) => state.accounts[0]);
 
   React.useEffect(() => {
-    //connectWallet();
+    connectWallet();
   }, []);
 
   return (
@@ -18,7 +18,7 @@ export const Button = ({}: ButtonProps) => {
       {address ? (
         <div className="flex space-x-2">
           <div className="hidden sm:block tracking-wider px-4 py-2  rounded-lg backdrop-blur-sm bg-opacity-20 bg-white">
-            {parseFloat("10").toFixed(2)} TRX
+            {parseFloat("10").toFixed(2)} NEAR
           </div>
           <div
             className="hidden cursor-copy sm:block tracking-wider px-4 py-2  rounded-lg backdrop-blur-sm bg-opacity-20 bg-white"
