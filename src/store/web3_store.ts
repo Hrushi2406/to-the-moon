@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import create from "zustand";
-import { fetchContracts } from "../utils/fetch_contracts";
+import { fetchContracts, loadTournament } from "../utils/fetch_contracts";
 import { formatBigNum } from "../utils/helper";
 import { defaultChainId, supportedNetworks } from "../utils/network_config";
 
@@ -16,6 +16,14 @@ const web3Store = (set: any, get: any) => ({
   hasRegistered: false,
   error: "",
   leaderboard: [],
+
+  withdrawPrize: async (tId: string) => {
+    const provider = get().signer;
+    const chainId = get().chainId;
+    const prevTournament = await loadTournament(provider, chainId, tId);
+
+    await prevTournament.withdrawPrize();
+  },
 
   getLeaderBoard: async () => {
     const data = await get().tournament.getLeaderBoard();
@@ -38,8 +46,9 @@ const web3Store = (set: any, get: any) => ({
     const timeLimit = await get().tournament.timeLimit();
     let startTime = await get().tournament.startTime();
     const info = await get().tournament.getRewardInfo();
+    const id = await get().tournament.id();
     const joiningFee = ethers.utils.formatEther(info[1]).toString();
-    const playersJoined = info[2].toString();
+    const playersJoined = info[2].toNumber();
     const { prizePool, commissionPercentage, isSponsored } = info[0];
     const endsInNum = startTime.toNumber() + timeLimit.toNumber();
 
@@ -52,6 +61,7 @@ const web3Store = (set: any, get: any) => ({
         isSponsored,
         name,
         endsIn,
+        id: id.toString(),
         commissionPercentage: commissionPercentage.toNumber(),
         prizePool: ethers.utils.formatEther(prizePool),
       },
@@ -118,7 +128,13 @@ const web3Store = (set: any, get: any) => ({
     }
   },
 
-  joinTournament: () => {},
+  joinTournament: async () => {
+    const joiningFees = await get().tournament.joiningFees();
+
+    await get().tournament.joinTournament({
+      value: joiningFees,
+    });
+  },
 
   // joinTournament: async () => {
   //   const isPlayerRegistered = await get().toTheMoon.isPlayerRegistered(

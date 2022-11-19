@@ -104,9 +104,15 @@ function Game({}: GameProps) {
 export default Game;
 
 const GameStartPage = ({ handleRestart }: { handleRestart: any }) => {
+  const joinTournament = useWeb3((state) => state.joinTournament);
+
+  const playToEarn = () => {
+    joinTournament();
+  };
+
   return (
     <>
-      <button className="primary-button" onClick={handleRestart}>
+      <button className="primary-button" onClick={playToEarn}>
         Play to earn ETH
       </button>
       <div className="my-2"></div>

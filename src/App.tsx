@@ -3,34 +3,24 @@ import { Button } from "./components/Button";
 import Game from "./components/Game";
 import logo from "./assets/logo.png";
 import { MobileView } from "react-device-detect";
-import { formatAddress, scrollToGame } from "./utils/helper";
+import { scrollToGame } from "./utils/helper";
 import { useWeb3 } from "./store/web3_store";
-import { Countdown } from "./components/Countdown";
+import { Leaderboard } from "./components/Leaderboard";
 
 function App() {
   const ref = React.useRef<HTMLDivElement>(null);
 
   const tournament: any = useWeb3((state) => state.currentTournament);
   const hasJoinedTournament = useWeb3((state) => state.hasJoinedTournament);
-  const leaderboard: any = useWeb3((state) => state.leaderboard);
-
-  console.log("leaderboard: ", leaderboard);
 
   React.useEffect(() => {
-    {
-      /* getTournamentInfo(); */
-    }
-    {
-      /* getLeaderBoard(); */
-    }
     setTimeout(() => scrollToGame(ref), 170000);
   }, []);
 
   const prizePool =
-    parseFloat(tournament?.prizePool) +
     (tournament?.playersJoined + 1) *
-      tournament?.joiningFee *
-      (1 - tournament?.commissionPercentage / 10000);
+    tournament?.joiningFee *
+    (1 - tournament?.commissionPercentage / 10000);
 
   return (
     <div className="bg-black">
@@ -76,46 +66,7 @@ function App() {
 
         <div className="my-16"></div>
 
-        <div className="backdrop-blur-sm px-8 py-8 bg-opacity-10 rounded-lg bg-white">
-          <div className="flex justify-between items-center">
-            <h4 className="text-3xl font-bold tracking-wider">
-              {tournament?.name}
-            </h4>
-            <Countdown />
-          </div>
-
-          <div className="my-6"></div>
-
-          <div className="grid grid-cols-4">
-            <h6 className="tracking-wider col-span-2 uppercase text-lg">
-              Player
-            </h6>
-            <h6 className="tracking-wider uppercase text-lg text-right">
-              SCORE
-            </h6>
-            <h6 className="tracking-wider uppercase text-lg text-right">
-              PRIZE
-            </h6>
-          </div>
-
-          <div className="w-full text-center text-lg my-4">
-            {leaderboard.map((player: any) => {
-              return (
-                <div className="grid grid-cols-4">
-                  <h6 className="tracking-wider col-span-2 uppercase text-lg text-left">
-                    {player.name}/{formatAddress(player.address)}
-                  </h6>
-                  <h6 className="tracking-wider uppercase text-lg text-right">
-                    {player.highscore}
-                  </h6>
-                  <h6 className="tracking-wider uppercase text-lg text-right">
-                    {player.prize} ETH
-                  </h6>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+        <Leaderboard tournament={tournament} />
       </div>
     </div>
   );

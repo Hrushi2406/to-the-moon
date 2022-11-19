@@ -6,7 +6,7 @@ const formatAddress = (address: string) => {
     : address.substring(0, 4) + "...." + address.slice(-4);
 };
 
-const formatBigNum = (num: any) => ethers.utils.formatEther(num).toString();
+const formatBigNum = (num: any) => ethers.utils.formatEther(num);
 
 const scrollToGame = (ref: React.RefObject<HTMLDivElement>) => {
   if (ref && ref.current) {

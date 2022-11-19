@@ -23,4 +23,20 @@ const fetchContracts = async (provider: any, chainId: number) => {
   return { toTheMoon, tournament };
 };
 
-export { fetchContracts };
+const loadTournament = async (provider: any, chainId: number, id: string) => {
+  const toTheMoon = new ethers.Contract(
+    supportedNetworks[chainId].address,
+    ToTheMoon.abi,
+    provider
+  );
+  const tAtId = await toTheMoon.tournaments(id);
+  const tournament = new ethers.Contract(
+    tAtId.contractAddress,
+    Tournament.abi,
+    provider
+  );
+
+  return tournament;
+};
+
+export { fetchContracts, loadTournament };
