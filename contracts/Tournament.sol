@@ -11,6 +11,8 @@ import {WadRayMath} from "./math/WadRayMath.sol";
 import {Errors} from "./utils/Errors.sol";
 import {DataTypes} from "./utils/DataTypes.sol";
 
+import "hardhat/console.sol";
+
 /**
  * @title Tournament contract
  * @author Sumit Mahajan
@@ -145,15 +147,25 @@ contract Tournament is ITournament, ReentrancyGuard {
 
         uint256 r = getRValue(playerListSet.length());
 
+        console.log("r: ", r);
+        console.log("Prizepool: ", currentRewardVars.prizePool);
+        console.log("nWinners: ", currentRewardVars.nWinners);
+        console.log("pow: ", pow(r, currentRewardVars.nWinners));
+
         uint256 a = (currentRewardVars.prizePool.wadMul(r - 1e18)).wadDiv(
             pow(r, currentRewardVars.nWinners) - 1e18
         );
 
-        for (uint256 i = 0; i < playerListSet.length(); i++) {
+        console.log("A: ", a);
+
+        for (uint256 i = 0; i < currentRewardVars.nWinners; i++) {
+            console.log("1");
             leaderboardTemp[i].prize = a.wadMul(
                 pow(r, (currentRewardVars.nWinners - i - 1))
             );
+            console.log("2");
         }
+        console.log("3");
 
         return leaderboardTemp;
     }
@@ -222,6 +234,8 @@ contract Tournament is ITournament, ReentrancyGuard {
             Errors.TOURNAMENT_IS_LIVE
         );
 
+        require(!hasEnded, Errors.TOURNAMENT_HAS_ENDED);
+
         hasEnded = true;
 
         DataTypes.LeaderBoardEntry[] memory leaderboardTemp = getLeaderBoard();
@@ -239,20 +253,30 @@ contract Tournament is ITournament, ReentrancyGuard {
     }
 
     function withdrawPrize() external override {
+        console.log("Withdraw prize");
         require(
             startTime + timeLimit < block.timestamp,
             Errors.TOURNAMENT_IS_LIVE
         );
+        console.log("TOURNAMENT_HAS_ENDED HAS ENDED ");
 
         bool hasPlayerJoined = IToTheMooon(gameContractAddress)
             .hasJoinedTournament(msg.sender, id);
+
+        console.log("checking player joined");
         require(hasPlayerJoined, Errors.PLAYER_NOT_JOINED);
+        console.log("Player joined");
 
         DataTypes.PlayerStats storage player = playerStatsMap[msg.sender];
+        console.log("Player here");
+        console.log("unclaimedPrize", player.unclaimedPrize);
 
         if (player.unclaimedPrize > 0) {
+            uint256 temp = player.unclaimedPrize;
+            console.log(temp);
+            console.log(address(this).balance);
             player.unclaimedPrize = 0;
-            payable(msg.sender).transfer(player.unclaimedPrize);
+            payable(msg.sender).transfer(temp);
         }
     }
 
@@ -311,7 +335,10 @@ contract Tournament is ITournament, ReentrancyGuard {
 
     function pow(uint256 a, uint256 b) internal pure returns (uint256) {
         uint256 ans = a;
-        for (uint256 i = 0; i < b; i++) {
+
+        if (b == 0) return 1e18;
+
+        for (uint256 i = 1; i < b; i++) {
             ans = ans.wadMul(a);
         }
         return ans;

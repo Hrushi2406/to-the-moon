@@ -27,17 +27,17 @@ contract ToTheMooon is IToTheMooon, Ownable, ReentrancyGuard {
 
     EnumerableSet.Bytes32Set usernames;
 
-    mapping(uint => DataTypes.TournamentStruct) public tournaments;
+    mapping(uint256 => DataTypes.TournamentStruct) public tournaments;
 
-    mapping(uint => uint) public override r_values;
+    mapping(uint256 => uint256) public override r_values;
 
-    uint public currentTournamentId;
+    uint256 public currentTournamentId;
 
-    uint public override timeLimit = 300;
+    uint256 public override timeLimit = 40;
 
-    uint public override joiningFees = 1 ether;
+    uint256 public override joiningFees = 1 ether;
 
-    uint public override winnersPercentage = 6900;
+    uint256 public override winnersPercentage = 6900;
 
     constructor() {
         r_values[10] = 1.15e18;
@@ -64,14 +64,14 @@ contract ToTheMooon is IToTheMooon, Ownable, ReentrancyGuard {
                 currentTournamentId
             );
 
-        for (uint i = 0; i < players[_player].tournamentIds.length(); i++) {
+        for (uint256 i = 0; i < players[_player].tournamentIds.length(); i++) {
             pTournaments[i] = tournaments[players[_player].tournamentIds.at(i)];
         }
 
         return pTournaments;
     }
 
-    function hasJoinedTournament(address _wallet, uint tournamentId)
+    function hasJoinedTournament(address _wallet, uint256 tournamentId)
         external
         view
         override
@@ -90,7 +90,10 @@ contract ToTheMooon is IToTheMooon, Ownable, ReentrancyGuard {
         return player.username;
     }
 
-    function setUserName(string memory _name, uint _strlen) external override {
+    function setUserName(string memory _name, uint256 _strlen)
+        external
+        override
+    {
         require(
             !usernames.contains(keccak256(abi.encodePacked(_name))),
             Errors.USERNAME_TAKEN
@@ -153,22 +156,22 @@ contract ToTheMooon is IToTheMooon, Ownable, ReentrancyGuard {
         );
     }
 
-    function setTimeLimit(uint timeLimit_) external override onlyOwner {
+    function setTimeLimit(uint256 timeLimit_) external override onlyOwner {
         timeLimit = timeLimit_;
     }
 
-    function setJoiningFees(uint joiningFees_) external override onlyOwner {
+    function setJoiningFees(uint256 joiningFees_) external override onlyOwner {
         joiningFees = joiningFees_;
     }
 
     function substring(
         string memory str,
-        uint startIndex,
-        uint endIndex
+        uint256 startIndex,
+        uint256 endIndex
     ) internal pure returns (string memory) {
         bytes memory strBytes = bytes(str);
         bytes memory result = new bytes(endIndex - startIndex);
-        for (uint i = startIndex; i < endIndex; i++) {
+        for (uint256 i = startIndex; i < endIndex; i++) {
             result[i - startIndex] = strBytes[i];
         }
         return string(result);

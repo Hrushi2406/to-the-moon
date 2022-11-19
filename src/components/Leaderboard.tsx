@@ -11,7 +11,11 @@ export const Leaderboard = ({ tournament }: LeaderboardProps) => {
   const hasJoinedTournament = useWeb3((state) => state.hasJoinedTournament);
   const withdrawPrize = useWeb3((state) => state.withdrawPrize);
 
-  const claimPrize = () => withdrawPrize(tournament?.id);
+  const claimPrize = async () => {
+    await withdrawPrize(tournament?.id);
+
+    //window.location.reload();
+  };
 
   return (
     <>
@@ -46,6 +50,7 @@ export const Leaderboard = ({ tournament }: LeaderboardProps) => {
                 <h6 className="tracking-wider uppercase text-lg text-right">
                   {parseFloat(player.prize).toFixed(2)} ETH
                 </h6>
+                {/* should not show when tournament has not ended */}
                 {hasJoinedTournament ? (
                   <button className="disabled-button" onClick={claimPrize}>
                     Claim

@@ -14,6 +14,8 @@ const web3Store = (set: any, get: any) => ({
   currentTournament: null,
   hasJoinedTournament: false,
   hasRegistered: false,
+  highscore: 0,
+  attemptsLeft: 0,
   error: "",
   leaderboard: [],
 
@@ -21,6 +23,12 @@ const web3Store = (set: any, get: any) => ({
     const provider = get().signer;
     const chainId = get().chainId;
     const prevTournament = await loadTournament(provider, chainId, tId);
+
+    const hasEnded = await get().tournament.hasEnded();
+
+    const tx = await get().tournament.endTournament();
+
+    await tx.wait();
 
     await prevTournament.withdrawPrize();
   },
@@ -52,6 +60,8 @@ const web3Store = (set: any, get: any) => ({
     const { prizePool, commissionPercentage, isSponsored } = info[0];
     const endsInNum = startTime.toNumber() + timeLimit.toNumber();
 
+    console.log("data: ", playersJoined);
+
     const endsIn = new Date(endsInNum * 1000);
 
     set({
@@ -67,10 +77,7 @@ const web3Store = (set: any, get: any) => ({
       },
     });
 
-    console.log(
-      "commissionPercentage.toNumber(): ",
-      commissionPercentage.toNumber()
-    );
+    console.log("commissionPercentage.toNumber(): ", get().currentTournament);
   },
 
   checkHasRegistered: async () => {
@@ -120,7 +127,10 @@ const web3Store = (set: any, get: any) => ({
         signer,
         ...contracts,
       });
+      get().getTournamentInfo();
       get().getLeaderBoard();
+      get().checkHasJoinedTournament();
+      get().getHighscore();
     } catch (e: any) {
       set({ error: e.message });
 
@@ -128,12 +138,25 @@ const web3Store = (set: any, get: any) => ({
     }
   },
 
+  getHighscore: async () => {
+    const { highscore, attemptsLeft } = await get().tournament.playerStatsMap(
+      get().accounts[0]
+    );
+
+    set({
+      highscore: highscore.toNumber(),
+      attemptsLeft: attemptsLeft.toNumber(),
+    });
+  },
+
   joinTournament: async () => {
     const joiningFees = await get().tournament.joiningFees();
 
-    await get().tournament.joinTournament({
+    const tx = await get().tournament.joinTournament({
       value: joiningFees,
     });
+
+    await tx.wait();
   },
 
   // joinTournament: async () => {

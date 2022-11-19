@@ -13,7 +13,10 @@ function App() {
   const tournament: any = useWeb3((state) => state.currentTournament);
   const hasJoinedTournament = useWeb3((state) => state.hasJoinedTournament);
 
+  const getTournamentInfo = useWeb3((state) => state.getTournamentInfo);
+
   React.useEffect(() => {
+    //getTournamentInfo();
     setTimeout(() => scrollToGame(ref), 170000);
   }, []);
 

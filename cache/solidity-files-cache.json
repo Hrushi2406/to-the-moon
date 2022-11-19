@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "/Users/hrushi/Projects/Crypto/to-the-moon-near/contracts/ToTheMooon.sol": {
-      "lastModificationDate": 1668864953747,
-      "contentHash": "ac7618eae495e1df1bdbbc4b703a50ff",
+      "lastModificationDate": 1668877859855,
+      "contentHash": "e0a92ce060e6c1ed65a34f16c75c2219",
       "sourceName": "contracts/ToTheMooon.sol",
       "solcConfig": {
         "version": "0.8.7",
@@ -47,8 +47,8 @@
       ]
     },
     "/Users/hrushi/Projects/Crypto/to-the-moon-near/contracts/Tournament.sol": {
-      "lastModificationDate": 1668865178987,
-      "contentHash": "dc27695c95ab4e1db9b165f4465a01ff",
+      "lastModificationDate": 1668883287931,
+      "contentHash": "a5a2e4f56c0c13a058767b2656354a9f",
       "sourceName": "contracts/Tournament.sol",
       "solcConfig": {
         "version": "0.8.7",
@@ -81,7 +81,8 @@
         "./math/PercentageMath.sol",
         "./math/WadRayMath.sol",
         "./utils/Errors.sol",
-        "./utils/DataTypes.sol"
+        "./utils/DataTypes.sol",
+        "hardhat/console.sol"
       ],
       "versionPragmas": [
         "^0.8.0"

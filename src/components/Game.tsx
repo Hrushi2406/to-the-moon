@@ -16,6 +16,9 @@ function Game({}: GameProps) {
     (state) => state.checkHasJoinedTournament
   );
 
+  const highscore = useWeb3((state) => state.highscore);
+  const attemptsLeft = useWeb3((state) => state.attemptsLeft);
+
   const hasJoinedTournament = true;
   //const hasJoinedTournament = useWeb3((state) => state.hasJoinedTournament);
 
@@ -23,8 +26,8 @@ function Game({}: GameProps) {
 
   useEffect(() => {
     //tournaments.join();
-    getTournamentInfo();
-    checkHasJoinedTournament();
+    //getTournamentInfo();
+    //checkHasJoinedTournament();
   }, [tournament]);
 
   const {
@@ -76,9 +79,9 @@ function Game({}: GameProps) {
               <p className="mx-auto text-center text-6xl ">{score}</p>
               <div className="my-2"></div>
               <h6 className="mx-auto text-center text-2xl ">Highscore</h6>
-              <p className="mx-auto text-center text-6xl ">{score}</p>
+              <p className="mx-auto text-center text-6xl ">{highscore}</p>
               <p>Do you want to submit this score for tournament? </p>
-              <p>Only 3 submission left </p>
+              <p>Only {attemptsLeft} submission left </p>
               <GameStartPage handleRestart={handleRestart} />
             </div>
           </div>
@@ -106,8 +109,9 @@ export default Game;
 const GameStartPage = ({ handleRestart }: { handleRestart: any }) => {
   const joinTournament = useWeb3((state) => state.joinTournament);
 
-  const playToEarn = () => {
-    joinTournament();
+  const playToEarn = async () => {
+    await joinTournament();
+    window.location.reload();
   };
 
   return (
