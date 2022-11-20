@@ -108,6 +108,7 @@ export default Game;
 
 const GameStartPage = ({ handleRestart }: { handleRestart: any }) => {
   const joinTournament = useWeb3((state) => state.joinTournament);
+  const hasJoinedTournament = useWeb3((state) => state.hasJoinedTournament);
 
   const playToEarn = async () => {
     await joinTournament();

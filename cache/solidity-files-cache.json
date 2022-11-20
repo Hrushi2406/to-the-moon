@@ -47,8 +47,8 @@
       ]
     },
     "/Users/hrushi/Projects/Crypto/to-the-moon-near/contracts/Tournament.sol": {
-      "lastModificationDate": 1668883287931,
-      "contentHash": "a5a2e4f56c0c13a058767b2656354a9f",
+      "lastModificationDate": 1668885884139,
+      "contentHash": "f08c78f985d5c435c9d6dd88fc994b3b",
       "sourceName": "contracts/Tournament.sol",
       "solcConfig": {
         "version": "0.8.7",
