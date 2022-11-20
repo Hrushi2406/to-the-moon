@@ -9,6 +9,7 @@ library Errors {
     string public constant PLAYER_NOT_JOINED = "PLAYER_NOT_JOINED";
     string public constant NOT_ENOUGH_FUNDS_PROVIDED =
         "NOT_ENOUGH_FUNDS_PROVIDED";
+    string public constant NOT_ENOUGH_FUNDS = "NOT_ENOUGH_FUNDS";
     string public constant NO_ATTEMPTS_LEFT = "NO_ATTEMPTS_LEFT";
     string public constant ATTEMPTS_LEFT = "ATTEMPTS_LEFT";
 

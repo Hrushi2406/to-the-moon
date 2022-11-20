@@ -6,6 +6,19 @@ import {DataTypes} from "../utils/DataTypes.sol";
 interface ITournament {
     function hasEnded() external view returns (bool);
 
+    function getTournamentInfo()
+        external
+        view
+        returns (
+            string memory _name,
+            uint _timeLimit,
+            uint _startTime,
+            uint _id,
+            uint _joiningFees,
+            DataTypes.RewardVars memory _rewardVars,
+            uint _nPlayers
+        );
+
     function getRewardInfo()
         external
         view
