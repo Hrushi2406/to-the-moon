@@ -52,6 +52,10 @@ contract Tournament is ITournament, ReentrancyGuard {
         uint256 score
     );
 
+    event FundsAdded(address indexed payer, uint indexed timestamp, uint funds);
+
+    event FundsWithdrawn(uint indexed timestamp, uint funds);
+
     constructor(
         uint256 id_,
         string memory name_,
@@ -72,6 +76,40 @@ contract Tournament is ITournament, ReentrancyGuard {
     modifier onlyApprovedCaller() {
         require(msg.sender == approvedCaller, Errors.CALLER_NOT_AUTHORIZED);
         _;
+    }
+
+    receive() external payable {
+        emit FundsAdded(msg.sender, block.timestamp, msg.value);
+    }
+
+    function withdrawContractFunds(uint funds) external onlyApprovedCaller {
+        require(funds <= address(this).balance, Errors.NOT_ENOUGH_FUNDS);
+        payable(msg.sender).transfer(funds);
+
+        emit FundsWithdrawn(block.timestamp, funds);
+    }
+
+    function getTournamentInfo()
+        public
+        view
+        override
+        returns (
+            string memory _name,
+            uint _timeLimit,
+            uint _startTime,
+            uint _id,
+            uint _joiningFees,
+            DataTypes.RewardVars memory _rewardVars,
+            uint _nPlayers
+        )
+    {
+        (_rewardVars, , _nPlayers) = getRewardInfo();
+
+        _name = name;
+        _timeLimit = timeLimit;
+        _startTime = startTime;
+        _id = id;
+        _joiningFees = joiningFees;
     }
 
     function getRewardInfo()
