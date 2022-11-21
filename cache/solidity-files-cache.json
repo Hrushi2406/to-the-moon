@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "/Users/hrushi/Projects/Crypto/to-the-moon-near/contracts/ToTheMooon.sol": {
-      "lastModificationDate": 1669053912343,
-      "contentHash": "fc3e91bf41ff217b5811724f01134155",
+      "lastModificationDate": 1669062742034,
+      "contentHash": "c34048082101407804118dced376421c",
       "sourceName": "contracts/ToTheMooon.sol",
       "solcConfig": {
         "version": "0.8.7",

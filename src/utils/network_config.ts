@@ -17,14 +17,14 @@ const supportedNetworks: any = {
     name: "Polygon Mumbai Testnet",
     tokenSymbol: "MATIC",
     rpcURL: "https://rpc-mumbai.maticvigil.com",
-    address: "0x9477Ae1FEA1e16fA954C246F6bDd0c10df57c338",
+    address: "0xDA7Ffea2CAA2A22159d23CB4C59a1B149a33e0d7",
   },
 
   1313161555: {
     name: "Aurora Testnet",
     tokenSymbol: "ETH",
     rpcURL: "https://testnet.aurora.dev",
-    address: "0xf949D6f9F94FaFADF5908285c77e303c3347a0f5",
+    address: "0x0720A5a185F71F4203a0217Bd8a32faa5C2A1528",
   },
 };
 
