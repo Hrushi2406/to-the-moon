@@ -59,7 +59,8 @@ function App() {
 
           {hasJoinedTournament ? (
             <h6 className="max-w-sm text-center mx-auto tracking-wider">
-              You have joined today's tournament. Score High and earn $MATIC
+              You have joined today's tournament. <br></br>Score High and earn
+              $MATIC
             </h6>
           ) : (
             <h6 className="max-w-sm text-center mx-auto tracking-wider">

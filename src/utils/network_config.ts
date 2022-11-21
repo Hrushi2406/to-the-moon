@@ -19,6 +19,13 @@ const supportedNetworks: any = {
     rpcURL: "https://rpc-mumbai.maticvigil.com",
     address: "0x9477Ae1FEA1e16fA954C246F6bDd0c10df57c338",
   },
+
+  1313161555: {
+    name: "Aurora Testnet",
+    tokenSymbol: "ETH",
+    rpcURL: "https://testnet.aurora.dev",
+    address: "0xf949D6f9F94FaFADF5908285c77e303c3347a0f5",
+  },
 };
 
 export { defaultChainId, supportedNetworks };

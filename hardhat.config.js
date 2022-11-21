@@ -9,6 +9,13 @@ module.exports = {
         "0bc65b6206d5b9148e893955affeed6e3a07c709d3d645428974383c13787678",
       ],
     },
+
+    auroratest: {
+      url: "https://testnet.aurora.dev",
+      accounts: [
+        "0bc65b6206d5b9148e893955affeed6e3a07c709d3d645428974383c13787678",
+      ],
+    },
   },
 
   solidity: {
