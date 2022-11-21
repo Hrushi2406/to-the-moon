@@ -72,9 +72,9 @@ function Game({}: GameProps) {
   }, [addEventListener, removeEventListener, handleGameOver]);
 
   return (
-    <div className="container ">
+    <div className="container gradient-border">
       {isLoaded === false && (
-        <div className="loading-overlay">
+        <div className="loading-overlay gradient-border">
           <p>Loading... ({loadingPercentage}%)</p>
         </div>
       )}
@@ -153,7 +153,7 @@ export default Game;
 
 const Overlay = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="overlay ">
+    <div className="overlay gradient-border">
       <div className="flex items-center justify-center flex-col h-full">
         {children}
       </div>
