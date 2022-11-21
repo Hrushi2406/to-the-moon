@@ -75,7 +75,7 @@ export const Tabs = ({}: TabsProps) => {
                 onChange={(e) => handleTournamentChange(e.target.value)}
               >
                 {allTournaments.map((item: any) => (
-                  <option key={item.id} value={item.id}>
+                  <option key={item.id} value={item.id} className="text-black">
                     {item.name}
                   </option>
                 ))}

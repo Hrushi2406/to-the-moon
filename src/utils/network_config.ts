@@ -14,7 +14,7 @@ const supportedNetworks: any = {
   // Returned address is wrong. https://github.com/nomiclabs/hardhat/issues/2162.
   // Copy address from polygonscan
   80001: {
-    name: "Mumbai",
+    name: "Polygon Mumbai Testnet",
     tokenSymbol: "MATIC",
     rpcURL: "https://rpc-mumbai.maticvigil.com",
     address: "0x9477Ae1FEA1e16fA954C246F6bDd0c10df57c338",

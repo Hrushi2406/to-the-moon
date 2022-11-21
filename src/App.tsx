@@ -12,11 +12,13 @@ import {
 import { useWeb3 } from "./store/web3_store";
 import { Leaderboard } from "./components/Leaderboard";
 import { Tabs } from "./components/Tabs";
+import { supportedNetworks } from "./utils/network_config";
 
 function App() {
   const ref = React.useRef<HTMLDivElement>(null);
 
   const tournament: any = useWeb3((state) => state.currentTournament);
+  const chainId = useWeb3((state) => state.chainId);
   const hasJoinedTournament: any = useWeb3(
     (state) => state.hasJoinedTournament
   );
@@ -24,6 +26,8 @@ function App() {
   React.useEffect(() => {
     setTimeout(() => scrollToGame(ref), 170000);
   }, []);
+
+  const symbol = supportedNetworks[chainId].tokenSymbol;
 
   const prizePool =
     tournament?.prizePool +
@@ -52,26 +56,28 @@ function App() {
 
         <div className="text-center mx-auto">
           <h3 className="text-6xl tracking-wider gradient-text">
-            Play and earn <span className="">$ETH</span>
+            Play and earn <span className="">${symbol}</span>
           </h3>
 
           <div className="my-4"></div>
 
           {hasJoinedTournament ? (
             <h6 className="max-w-sm text-center mx-auto tracking-wider">
-              You have joined today's tournament. <br></br>Score High and earn
-              $MATIC
+              You have joined today's tournament🥳.<br></br> Prize pool{" "}
+              <span className="focused-text">
+                {prizePool.toFixed(2)} ${symbol}
+              </span>{" "}
             </h6>
           ) : (
             <h6 className="max-w-sm text-center mx-auto tracking-wider">
               Take part in today‘s prize pool of{" "}
               <span className="focused-text ">
-                {prizePool.toFixed(2)} $ETH!{" "}
+                {prizePool.toFixed(2)} ${symbol}!{" "}
               </span>{" "}
               <br></br>
               Pay only{" "}
               <span className="focused-text ">
-                {tournament?.joiningFee} $ETH{" "}
+                {tournament?.joiningFee} ${symbol}{" "}
               </span>
               to play!
             </h6>
