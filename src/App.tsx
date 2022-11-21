@@ -57,15 +57,24 @@ function App() {
 
           <div className="my-4"></div>
 
-          <h6 className="max-w-sm text-center mx-auto tracking-wider">
-            Take part in today‘s prize pool of{" "}
-            <span className="focused-text ">{prizePool} $ETH! </span> <br></br>
-            Pay only{" "}
-            <span className="focused-text ">
-              {tournament?.joiningFee} $ETH{" "}
-            </span>
-            to play!
-          </h6>
+          {hasJoinedTournament ? (
+            <h6 className="max-w-sm text-center mx-auto tracking-wider">
+              You have joined today's tournament. Score High and earn $MATIC
+            </h6>
+          ) : (
+            <h6 className="max-w-sm text-center mx-auto tracking-wider">
+              Take part in today‘s prize pool of{" "}
+              <span className="focused-text ">
+                {prizePool.toFixed(2)} $ETH!{" "}
+              </span>{" "}
+              <br></br>
+              Pay only{" "}
+              <span className="focused-text ">
+                {tournament?.joiningFee} $ETH{" "}
+              </span>
+              to play!
+            </h6>
+          )}
 
           <div className="my-2"></div>
 

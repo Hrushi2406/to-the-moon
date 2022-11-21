@@ -80,7 +80,8 @@ const web3Store = (set: any, get: any) => ({
 
       //console.log("DATA ", data);
 
-      await fetch("http://127.0.0.1:8000/record_score", {
+      await fetch("https://to-the-mooon-admin.onrender.com/record_score", {
+        // await fetch("http://127.0.0.1:8000/record_score", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
