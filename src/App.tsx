@@ -24,7 +24,7 @@ function App() {
   );
 
   React.useEffect(() => {
-    setTimeout(() => scrollToGame(ref), 170000);
+    setTimeout(() => scrollToGame(ref), 1700);
   }, []);
 
   const symbol = supportedNetworks[chainId].tokenSymbol;
