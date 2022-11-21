@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useWeb3 } from "../store/web3_store";
-import { formatAddress } from "../utils/helper";
+import { copyToClipboard, formatAddress } from "../utils/helper";
 
 interface ButtonProps {}
 
@@ -8,6 +8,7 @@ export const Button = ({}: ButtonProps) => {
   const connectWallet = useWeb3((state) => state.connectWallet);
 
   const address = useWeb3((state) => state.accounts[0]);
+  const balance = useWeb3((state) => state.balance);
 
   React.useEffect(() => {
     connectWallet();
@@ -17,14 +18,12 @@ export const Button = ({}: ButtonProps) => {
     <>
       {address ? (
         <div className="flex space-x-2">
-          <div className="hidden sm:block tracking-wider px-4 py-2  rounded-lg backdrop-blur-sm bg-opacity-20 bg-white">
-            {parseFloat("10").toFixed(2)} NEAR
+          <div className="hidden sm:block text-sm tracking-wider px-4 py-2  rounded-lg backdrop-blur-sm bg-opacity-20 bg-white">
+            {balance.toFixed(2)} MATIC
           </div>
           <div
-            className="hidden cursor-copy sm:block tracking-wider px-4 py-2  rounded-lg backdrop-blur-sm bg-opacity-20 bg-white"
-            onClick={() => {
-              navigator.clipboard.writeText(address);
-            }}
+            className="hidden cursor-copy text-sm sm:block tracking-wider px-4 py-2  rounded-lg backdrop-blur-sm bg-opacity-20 bg-white"
+            onClick={() => copyToClipboard(address)}
           >
             {formatAddress(address)}
           </div>

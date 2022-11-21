@@ -1,4 +1,5 @@
 import { ethers } from "ethers";
+import { useSnackbar } from "react-simple-snackbar";
 
 const formatAddress = (address: string) => {
   return address.length == 0
@@ -17,4 +18,21 @@ const scrollToGame = (ref: React.RefObject<HTMLDivElement>) => {
   }
 };
 
-export { formatBigNum, scrollToGame, formatAddress };
+const snackbarOptions = {
+  position: "top-right",
+};
+
+const contractAddress = "0x9477Ae1FEA1e16fA954C246F6bDd0c10df57c338";
+
+const copyToClipboard = (address: string) => {
+  navigator.clipboard.writeText(address);
+};
+
+export {
+  formatBigNum,
+  scrollToGame,
+  formatAddress,
+  snackbarOptions,
+  contractAddress,
+  copyToClipboard,
+};

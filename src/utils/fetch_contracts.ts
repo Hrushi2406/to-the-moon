@@ -29,6 +29,7 @@ const loadTournament = async (provider: any, chainId: number, id: string) => {
     ToTheMoon.abi,
     provider
   );
+
   const tAtId = await toTheMoon.tournaments(id);
   const tournament = new ethers.Contract(
     tAtId.contractAddress,

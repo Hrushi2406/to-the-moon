@@ -4,6 +4,7 @@
   align-items: center;
   aspect-ratio: 9/16;
 }
+
 .container > .loading-overlay {
   /* We'll render the overlay on top of the Unity Application. */
   position: absolute;
@@ -30,9 +31,13 @@
 }
 
 .disabled-button {
-  @apply px-6 py-2 text-center text-lg backdrop-blur-sm bg-white bg-opacity-20 rounded-lg;
+  @apply px-6 py-2 text-center text-lg backdrop-blur-sm bg-white bg-opacity-20 rounded-lg tracking-wider;
 }
 
 .primary-button {
-  @apply px-6 py-2 text-center text-lg bg-[#896DD8] rounded-lg;
+  @apply px-6 py-2 text-center text-lg bg-[#896DD8] rounded-lg tracking-wider uppercase;
+}
+
+.rounded-button {
+  @apply px-6 py-1 text-center text-lg backdrop-blur-sm bg-white bg-opacity-20 rounded-full tracking-wider;
 }

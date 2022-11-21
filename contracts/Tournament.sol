@@ -52,9 +52,13 @@ contract Tournament is ITournament, ReentrancyGuard {
         uint256 score
     );
 
-    event FundsAdded(address indexed payer, uint indexed timestamp, uint funds);
+    event FundsAdded(
+        address indexed payer,
+        uint256 indexed timestamp,
+        uint256 funds
+    );
 
-    event FundsWithdrawn(uint indexed timestamp, uint funds);
+    event FundsWithdrawn(uint256 indexed timestamp, uint256 funds);
 
     constructor(
         uint256 id_,
@@ -82,7 +86,7 @@ contract Tournament is ITournament, ReentrancyGuard {
         emit FundsAdded(msg.sender, block.timestamp, msg.value);
     }
 
-    function withdrawContractFunds(uint funds) external onlyApprovedCaller {
+    function withdrawContractFunds(uint256 funds) external onlyApprovedCaller {
         require(funds <= address(this).balance, Errors.NOT_ENOUGH_FUNDS);
         payable(msg.sender).transfer(funds);
 
@@ -95,12 +99,12 @@ contract Tournament is ITournament, ReentrancyGuard {
         override
         returns (
             string memory _name,
-            uint _timeLimit,
-            uint _startTime,
-            uint _id,
-            uint _joiningFees,
+            uint256 _timeLimit,
+            uint256 _startTime,
+            uint256 _id,
+            uint256 _joiningFees,
             DataTypes.RewardVars memory _rewardVars,
-            uint _nPlayers
+            uint256 _nPlayers
         )
     {
         (_rewardVars, , _nPlayers) = getRewardInfo();
