@@ -24,7 +24,7 @@ const supportedNetworks: any = {
     name: "Aurora Testnet",
     tokenSymbol: "ETH",
     rpcURL: "https://testnet.aurora.dev",
-    address: "0x0720A5a185F71F4203a0217Bd8a32faa5C2A1528",
+    address: "0xf949D6f9F94FaFADF5908285c77e303c3347a0f5",
   },
 };
 
