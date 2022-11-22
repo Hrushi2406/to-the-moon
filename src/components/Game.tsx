@@ -153,7 +153,7 @@ export default Game;
 
 const Overlay = ({ children }: { children: React.ReactNode }) => {
   return (
-    <div className="overlay gradient-border">
+    <div className="overlay gradient-border ">
       <div className="flex items-center justify-center flex-col h-full">
         {children}
       </div>
