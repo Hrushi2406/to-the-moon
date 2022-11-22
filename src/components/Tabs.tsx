@@ -68,7 +68,7 @@ export const Tabs = ({}: TabsProps) => {
           <div className="gradient-container">
             <div className="flex justify-between">
               <select
-                className="bg-transparent text-2xl"
+                className="bg-transparent text-2xl tracking-wider outline-none"
                 value={
                   currentTId.length > 0 ? currentTId : currentTournament?.id
                 }

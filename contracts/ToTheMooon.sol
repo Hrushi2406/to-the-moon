@@ -33,7 +33,7 @@ contract ToTheMooon is IToTheMooon, Ownable, ReentrancyGuard {
 
     uint256 public currentTournamentId;
 
-    uint256 public override timeLimit = 64800;
+    uint256 public override timeLimit = 86400;
 
     uint256 public override joiningFees = 0.0001 ether;
 

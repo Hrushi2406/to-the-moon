@@ -1,5 +1,6 @@
 import { ethers } from "ethers";
 import { useSnackbar } from "react-simple-snackbar";
+import { supportedNetworks } from "./network_config";
 
 const formatAddress = (address: string) => {
   return address.length == 0
@@ -22,7 +23,7 @@ const snackbarOptions = {
   position: "top-right",
 };
 
-const contractAddress = "0x9477Ae1FEA1e16fA954C246F6bDd0c10df57c338";
+const contractAddress = supportedNetworks[1313161555].address;
 
 const copyToClipboard = (address: string) => {
   navigator.clipboard.writeText(address);
