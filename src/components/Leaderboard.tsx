@@ -49,7 +49,7 @@ export const Leaderboard = ({ tournament }: LeaderboardProps) => {
                 {player.highscore}
               </h6>
               <h6 className="tracking-wider col-span-2 uppercase text-lg text-right">
-                {parseFloat(player.prize).toFixed(2)} ETH
+                {parseFloat(player.prize).toFixed(4)} ETH
               </h6>
             </div>
           );

@@ -126,7 +126,7 @@ export const Tabs = ({}: TabsProps) => {
                       {tournament.highscore}
                     </h6>
                     <h6 className="tracking-wider col-span-2 uppercase text-lg text-right">
-                      {parseFloat(tournament.allocatedPrize).toFixed(2)} ETH
+                      {parseFloat(tournament.allocatedPrize).toFixed(4)} ETH
                     </h6>
                     <div className="col-span-2 text-right">
                       {parseFloat(tournament.unclaimedPrize) === 0 ? (
