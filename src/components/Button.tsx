@@ -35,7 +35,7 @@ export const Button = ({}: ButtonProps) => {
             {supportedNetworks[chainId].name}
           </div>
           <div className="hidden sm:block text-sm tracking-wider px-4 py-2  rounded-lg backdrop-blur-sm bg-opacity-20 bg-white">
-            {balance.toFixed(2)} ETH
+            {balance.toFixed(4)} ETH
           </div>
           <div
             className="hidden cursor-copy text-sm sm:block tracking-wider px-4 py-2  rounded-lg backdrop-blur-sm bg-opacity-20 bg-white"
