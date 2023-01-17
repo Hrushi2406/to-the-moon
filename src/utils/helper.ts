@@ -1,4 +1,6 @@
 import { ethers } from "ethers";
+import { useSnackbar } from "react-simple-snackbar";
+import { supportedNetworks } from "./network_config";
 
 const formatAddress = (address: string) => {
   return address.length == 0
@@ -17,4 +19,21 @@ const scrollToGame = (ref: React.RefObject<HTMLDivElement>) => {
   }
 };
 
-export { formatBigNum, scrollToGame, formatAddress };
+const snackbarOptions = {
+  position: "top-right",
+};
+
+const contractAddress = supportedNetworks[1313161555].address;
+
+const copyToClipboard = (address: string) => {
+  navigator.clipboard.writeText(address);
+};
+
+export {
+  formatBigNum,
+  scrollToGame,
+  formatAddress,
+  snackbarOptions,
+  contractAddress,
+  copyToClipboard,
+};

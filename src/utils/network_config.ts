@@ -8,16 +8,23 @@ const supportedNetworks: any = {
     name: "Hardhat",
     tokenSymbol: "ETH",
     rpcURL: "http://localhost:8545",
-    address: "0xFD6F7A6a5c21A3f503EBaE7a473639974379c351",
+    address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
   },
   // npx hardhat run scripts/deploy.js --network mumbai
   // Returned address is wrong. https://github.com/nomiclabs/hardhat/issues/2162.
   // Copy address from polygonscan
   80001: {
-    name: "Mumbai",
+    name: "Polygon Mumbai Testnet",
     tokenSymbol: "MATIC",
     rpcURL: "https://rpc-mumbai.maticvigil.com",
-    address: "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
+    address: "0xDA7Ffea2CAA2A22159d23CB4C59a1B149a33e0d7",
+  },
+
+  1313161555: {
+    name: "Aurora Testnet",
+    tokenSymbol: "ETH",
+    rpcURL: "https://testnet.aurora.dev",
+    address: "0xe604B496F10CBdAA68412Ea7e015630C6D6C3c49",
   },
 };
 

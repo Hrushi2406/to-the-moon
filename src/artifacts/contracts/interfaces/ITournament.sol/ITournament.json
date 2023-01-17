@@ -97,6 +97,76 @@
     },
     {
       "inputs": [],
+      "name": "getTournamentInfo",
+      "outputs": [
+        {
+          "internalType": "string",
+          "name": "_name",
+          "type": "string"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_timeLimit",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_startTime",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_id",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_joiningFees",
+          "type": "uint256"
+        },
+        {
+          "components": [
+            {
+              "internalType": "bool",
+              "name": "isSponsored",
+              "type": "bool"
+            },
+            {
+              "internalType": "uint256",
+              "name": "prizePool",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "nWinners",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "sponsorMetadata",
+              "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "commissionPercentage",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct DataTypes.RewardVars",
+          "name": "_rewardVars",
+          "type": "tuple"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_nPlayers",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "hasEnded",
       "outputs": [
         {
