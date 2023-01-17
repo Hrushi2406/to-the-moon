@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: agpl-3.0
+// SPDX-License-Identifier: Apache 2.0
 pragma solidity ^0.8.0;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
@@ -33,9 +33,9 @@ contract ToTheMooon is IToTheMooon, Ownable, ReentrancyGuard {
 
     uint256 public currentTournamentId;
 
-    uint256 public override timeLimit = 40;
+    uint256 public override timeLimit = 86400;
 
-    uint256 public override joiningFees = 1 ether;
+    uint256 public override joiningFees = 0.0001 ether;
 
     uint256 public override winnersPercentage = 6900;
 
