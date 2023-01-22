@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Unity, useUnityContext } from "react-unity-webgl";
 import { useWeb3 } from "../store/web3_store";
 import "../styles/game.css";
-import { useSnackbar } from "react-simple-snackbar";
+// import { useSnackbar } from "react-simple-snackbar";
 import React from "react";
 import { snackbarOptions } from "../utils/helper";
 
@@ -193,20 +193,20 @@ const GameStartPage = ({
   const hasJoinedTournament = useWeb3((state) => state.hasJoinedTournament);
   const hasTournamentEnded = useWeb3((state) => state.hasTournamentEnded);
 
-  const [openSnackbar, closeSnackbar] = useSnackbar(snackbarOptions);
+  // const [openSnackbar, closeSnackbar] = useSnackbar(snackbarOptions);
 
   const playToEarn = async () => {
-    openSnackbar(
-      "Transaction submitted, Changes will be reflected in few seconds"
-    );
+    // openSnackbar(
+    //   "Transaction submitted, Changes will be reflected in few seconds"
+    // );
     await joinTournament();
     window.location.reload();
   };
 
   const saveScore = async () => {
-    openSnackbar(
-      "Transaction submitted, Your highscore will be reflected in few seconds"
-    );
+    // openSnackbar(
+    //   "Transaction submitted, Your highscore will be reflected in few seconds"
+    // );
     await recordHighscore(score);
     window.location.reload();
   };

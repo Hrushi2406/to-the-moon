@@ -1,5 +1,5 @@
 import React from "react";
-import { Button } from "./components/Button";
+// import { Button } from "./components/Button";
 import Game from "./components/Game";
 import logo from "./assets/logo.png";
 import { MobileView } from "react-device-detect";
@@ -13,12 +13,21 @@ import { useWeb3 } from "./store/web3_store";
 import { Leaderboard } from "./components/Leaderboard";
 import { Tabs } from "./components/Tabs";
 import { supportedNetworks } from "./utils/network_config";
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { useAccount, useNetwork, useProvider, useSigner } from "wagmi";
 
 function App() {
   const ref = React.useRef<HTMLDivElement>(null);
 
+  const provider = useProvider()
+  const { address } = useAccount();
+  const {data: signer} = useSigner();
+  const {chain} = useNetwork();
+
+  const loadData = useWeb3((state) => state.loadData);
+
+  const chainId: any = chain?.id;
   const tournament: any = useWeb3((state) => state.currentTournament);
-  const chainId = useWeb3((state) => state.chainId);
   const hasJoinedTournament: any = useWeb3(
     (state) => state.hasJoinedTournament
   );
@@ -27,7 +36,20 @@ function App() {
     setTimeout(() => scrollToGame(ref), 1700);
   }, []);
 
-  const symbol = supportedNetworks[chainId].tokenSymbol;
+  React.useEffect(() => {
+    
+    if(address) {
+    loadData(provider, [address], chainId, signer);
+    }
+  }, [address, chainId]);
+
+  let symbol;
+  if(supportedNetworks[chainId]) {
+    symbol = supportedNetworks[chainId].tokenSymbol;
+  } else {
+    symbol = "ETH"
+
+  }
 
   const prizePool =
     tournament?.prizePool +
@@ -46,10 +68,18 @@ function App() {
               style={{ width: "24px", height: "24px" }}
               alt="To the Moon - Play to earn logo"
             />
-            <p className="text-xl text-white font- ">To the Mooon</p>
+            <p className="text-xl text-white font-">To the Mooon</p>
           </h1>
-
-          <Button />
+          <ConnectButton
+          // accountStatus={{
+          //   smallScreen: 'avatar',
+          //   largeScreen: 'full',
+          // }}
+          showBalance={{
+            smallScreen: false,
+            largeScreen: true,
+          }} />
+          {/* <Button /> */}
         </div>
 
         <div className="my-12"></div>

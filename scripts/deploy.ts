@@ -16,6 +16,8 @@ async function main() {
 
   const tAtId = await toTheMoon.tournaments(tId);
 
+  console.log("Tournament created: ", tAtId.contractAddress);
+
   for (let i = 0; i < 1; i++) {
     const tournament = new ethers.Contract(
       tAtId.contractAddress,

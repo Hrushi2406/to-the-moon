@@ -4,11 +4,12 @@ import ToTheMoon from "../artifacts/contracts/ToTheMooon.sol/ToTheMooon.json";
 import Tournament from "../artifacts/contracts/Tournament.sol/Tournament.json";
 
 const fetchContracts = async (provider: any, chainId: number) => {
-  const toTheMoon = new ethers.Contract(
+const toTheMoon = new ethers.Contract(
     supportedNetworks[chainId].address,
     ToTheMoon.abi,
     provider
   );
+  // console.log("Here", await provider.getCode(supportedNetworks[chainId].address))
 
   const tId = await toTheMoon.currentTournamentId();
 

@@ -1,4 +1,4 @@
-import { ethers } from "ethers";
+import { Signer, ethers } from "ethers";
 import create from "zustand";
 import { fetchContracts, loadTournament } from "../utils/fetch_contracts";
 import { formatBigNum } from "../utils/helper";
@@ -174,26 +174,10 @@ const web3Store = (set: any, get: any) => ({
     set({ hasJoinedTournament });
   },
 
-  connectWallet: async () => {
+  loadData: async (provider: any, accounts: [string], chainId: number, signer: any) => {
     try {
-      const provider = new ethers.providers.Web3Provider(window.ethereum);
-
-      const accounts = await window.ethereum.request({
-        method: "eth_requestAccounts",
-      });
-
-      console.log("accounts: ", accounts);
-
-      const signer = provider.getSigner();
-
-      const { chainId } = await provider.getNetwork();
-
-      if (!supportedNetworks[chainId]) {
-        throw new Error("Use Correct Network");
-      }
-
-      const contracts = await fetchContracts(signer, chainId);
-
+      const contracts = await fetchContracts(provider, chainId);
+      
       const balance = formatBigNum(await provider.getBalance(accounts[0]));
 
       set({
@@ -204,21 +188,27 @@ const web3Store = (set: any, get: any) => ({
         ...contracts,
       });
       const id = await get().toTheMoon.currentTournamentId();
+      console.log("id", id);
+
       get().getTournamentInfo(id.toString());
       get().getLeaderBoard(id.toString());
       get().checkHasJoinedTournament();
       get().getHighscore();
       get().getMyTournaments();
       get().getAllTournaments();
+
     } catch (e: any) {
       set({ error: e.message });
 
-      console.log("useWeb3 : connectWallet failed -> " + e.message);
+      console.log("useWeb3 : loadData failed -> " + e.message);
     }
   },
 
   checkHasEnded: async () => {
     const tournament = get().currentTournament;
+
+    if(!tournament) return;
+
     const now = new Date().getTime();
     const endsAt = tournament.endsIn.getTime();
 
@@ -226,7 +216,11 @@ const web3Store = (set: any, get: any) => ({
   },
 
   getHighscore: async () => {
-    const { highscore, attemptsLeft } = await get().tournament.playerStatsMap(
+    const tournament = await get().tournament;
+
+    if(!tournament) return;
+
+    const { highscore, attemptsLeft } = tournament.playerStatsMap(
       get().accounts[0]
     );
 

@@ -1,5 +1,4 @@
 import { ethers } from "ethers";
-import { useSnackbar } from "react-simple-snackbar";
 import { supportedNetworks } from "./network_config";
 
 const formatAddress = (address: string) => {
