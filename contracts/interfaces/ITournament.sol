@@ -3,6 +3,12 @@ pragma solidity ^0.8.0;
 
 import {DataTypes} from "../utils/DataTypes.sol";
 
+/**
+ * @title ITournament interface
+ * @author ToTheMooon
+ * @notice Interface for the Tournament contract in the ToTheMooon game
+ * @dev Interface for the Tournament contract in the ToTheMooon game
+ **/
 interface ITournament {
     function hasEnded() external view returns (bool);
 
@@ -22,11 +28,7 @@ interface ITournament {
     function getRewardInfo()
         external
         view
-        returns (
-            DataTypes.RewardVars memory,
-            uint joiningFees,
-            uint nPlayers
-        );
+        returns (DataTypes.RewardVars memory, uint joiningFees, uint nPlayers);
 
     function getLeaderBoard()
         external

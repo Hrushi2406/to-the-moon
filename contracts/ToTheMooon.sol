@@ -14,10 +14,11 @@ import {DataTypes} from "./utils/DataTypes.sol";
 
 /**
  * @title ToTheMooon contract
- * @author Sumit Mahajan
- * @dev Primary contract for the ToTheMoon game
+ * @author ToTheMooon
+ * @dev Primary contract for the ToTheMooon game
+ * @notice Primary contract for the ToTheMooon game
  **/
-contract ToTheMooon is IToTheMooon, Ownable, ReentrancyGuard {
+contract ToTheMooon is IToTheMooon, Ownable {
     using EnumerableSet for EnumerableSet.UintSet;
     using EnumerableSet for EnumerableSet.Bytes32Set;
 
@@ -53,12 +54,9 @@ contract ToTheMooon is IToTheMooon, Ownable, ReentrancyGuard {
         return owner();
     }
 
-    function getJoinedTournamentsByPlayer(address _player)
-        external
-        view
-        override
-        returns (DataTypes.TournamentStruct[] memory)
-    {
+    function getJoinedTournamentsByPlayer(
+        address _player
+    ) external view override returns (DataTypes.TournamentStruct[] memory) {
         DataTypes.TournamentStruct[]
             memory pTournaments = new DataTypes.TournamentStruct[](
                 currentTournamentId
@@ -71,29 +69,24 @@ contract ToTheMooon is IToTheMooon, Ownable, ReentrancyGuard {
         return pTournaments;
     }
 
-    function hasJoinedTournament(address _wallet, uint256 tournamentId)
-        external
-        view
-        override
-        returns (bool)
-    {
+    function hasJoinedTournament(
+        address _wallet,
+        uint256 tournamentId
+    ) external view override returns (bool) {
         return players[_wallet].tournamentIds.contains(tournamentId);
     }
 
-    function getUserName(address wallet_)
-        external
-        view
-        override
-        returns (string memory)
-    {
+    function getUserName(
+        address wallet_
+    ) external view override returns (string memory) {
         DataTypes.PlayerStruct storage player = players[wallet_];
         return player.username;
     }
 
-    function setUserName(string memory _name, uint256 _strlen)
-        external
-        override
-    {
+    function setUserName(
+        string memory _name,
+        uint256 _strlen
+    ) external override {
         require(
             !usernames.contains(keccak256(abi.encodePacked(_name))),
             Errors.USERNAME_TAKEN

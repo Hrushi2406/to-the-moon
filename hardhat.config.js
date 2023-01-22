@@ -2,7 +2,9 @@
 require("@nomicfoundation/hardhat-toolbox");
 
 module.exports = {
+  defaultNetwork: "hardhat",
   networks: {
+    hardhat: {},
     mumbai: {
       url: "https://rpc-mumbai.maticvigil.com",
       accounts: [

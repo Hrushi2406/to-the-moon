@@ -13,8 +13,9 @@ import {DataTypes} from "./utils/DataTypes.sol";
 
 /**
  * @title Tournament contract
- * @author Sumit Mahajan
+ * @author ToTheMooon
  * @dev Handles Tournament logic for sponsored and daily tournaments of ToTheMooon
+ * @notice Contract for any Tournament in ToTheMooon game
  **/
 contract Tournament is ITournament, ReentrancyGuard {
     using EnumerableSet for EnumerableSet.AddressSet;
@@ -22,42 +23,79 @@ contract Tournament is ITournament, ReentrancyGuard {
     using PercentageMath for uint256;
     using WadRayMath for uint256;
 
+    /// @dev Tournament id
     uint256 public id;
 
+    /// @dev Name of the tournament
     string public name;
 
+    /// @dev Starting timestamp for tournament
     uint256 public startTime;
 
+    /// @dev Time limit for which tournament will be live after startTime
     uint256 public timeLimit;
 
+    /// @dev Joining fees a player needs to pay to join the tournament
     uint256 public joiningFees;
 
+    /// @dev Contract address for ToTheMooon contract from where this tournament was initialized
     address public gameContractAddress;
 
+    /// @dev Admin caller that can perform certain restricted actions
     address public approvedCaller;
 
+    /// @dev Tracks if the tournament is live or not
     bool public override hasEnded;
 
+    /// @dev Reward information for this tournament
     DataTypes.RewardVars public rewardVars;
 
+    /// @dev Set of participants addresses
     EnumerableSet.AddressSet playerListSet;
 
+    /// @dev Stores player's score and reward information
     mapping(address => DataTypes.PlayerStats) public playerStatsMap;
 
+    /**
+     * @dev To track whenever score was recorded for any player
+     * @param player player's address
+     * @param timestamp timestamp
+     * @param score score
+     **/
     event ScoreRecorded(
         address indexed player,
         uint256 indexed timestamp,
         uint256 score
     );
 
+    /**
+     * @dev To track funds added by players
+     * @param payer payer
+     * @param timestamp timestamp
+     * @param funds amount
+     **/
     event FundsAdded(
         address indexed payer,
         uint256 indexed timestamp,
         uint256 funds
     );
 
+    /**
+     * @dev To track funds withdrawals from contract by approved caller
+     * @param timestamp timestamp
+     * @param funds amount
+     **/
     event FundsWithdrawn(uint256 indexed timestamp, uint256 funds);
 
+    /**
+     * @dev Initialize the Tournament contract
+     * @notice Initialize the Tournament
+     * @param id_ tournament id
+     * @param name_ tournament name
+     * @param startTime_ starting timestamp
+     * @param gameContractAddress_ contract address for tournament
+     * @param _rewardVars reward information
+     **/
     constructor(
         uint256 id_,
         string memory name_,
@@ -75,22 +113,50 @@ contract Tournament is ITournament, ReentrancyGuard {
         rewardVars = _rewardVars;
     }
 
+    /**
+     * @dev Allows only approved caller to perform certain functionality
+     * @notice Allows only approved caller to perform certain functionality
+     **/
     modifier onlyApprovedCaller() {
         require(msg.sender == approvedCaller, Errors.CALLER_NOT_AUTHORIZED);
         _;
     }
 
+    /**
+     * @dev Fallback function to recieve funds
+     * @notice Fallback function to recieve funds
+     **/
     receive() external payable {
         emit FundsAdded(msg.sender, block.timestamp, msg.value);
     }
 
-    function withdrawContractFunds(uint256 funds) external onlyApprovedCaller {
+    /**
+     * @dev Allows approved caller to withdraw funds from contract's balance
+     * @notice Allows approved caller to withdraw funds from contract's balance
+     * @param funds amount of wei that needs to be withdrawn
+     **/
+    function withdrawContractFunds(
+        uint256 funds
+    ) external onlyApprovedCaller nonReentrant {
         require(funds <= address(this).balance, Errors.NOT_ENOUGH_FUNDS);
-        payable(msg.sender).transfer(funds);
+        (bool success, ) = msg.sender.call{value: funds}("");
+        require(success, "Transfer failed.");
+        // payable(msg.sender).transfer(funds);
 
         emit FundsWithdrawn(block.timestamp, funds);
     }
 
+    /**
+     * @dev Returns the general information about current touranment
+     * @notice Returns the general information about current touranment
+     * @return _name name
+     * @return _timeLimit time limit for which tournament will be live since start time
+     * @return _startTime starting timestamp
+     * @return _id tournament id
+     * @return _joiningFees joining fees in wei to join the tournament
+     * @return _rewardVars reward information
+     * @return _nPlayers no of players participating in the current tournament
+     **/
     function getTournamentInfo()
         public
         view
@@ -114,15 +180,18 @@ contract Tournament is ITournament, ReentrancyGuard {
         _joiningFees = joiningFees;
     }
 
+    /**
+     * @dev Get reward information for current tournament
+     * @notice Get reward information for current tournament
+     * @return _rewardVars Reward information
+     * @return _joiningFees Joining Fees for tournament
+     * @return _nPlayers No of players participating in the current tournament
+     **/
     function getRewardInfo()
         public
         view
         override
-        returns (
-            DataTypes.RewardVars memory,
-            uint256,
-            uint256
-        )
+        returns (DataTypes.RewardVars memory, uint256, uint256)
     {
         return (
             DataTypes.RewardVars(
@@ -151,6 +220,11 @@ contract Tournament is ITournament, ReentrancyGuard {
         );
     }
 
+    /**
+     * @dev Returns leaderboard with estimated prizes based on current rankings of all the participants
+     * @notice Returns leaderboard with estimated prizes based on current rankings of all the participants
+     * @return leaderboard skd
+     **/
     function getLeaderBoard()
         public
         view
@@ -200,6 +274,10 @@ contract Tournament is ITournament, ReentrancyGuard {
         return leaderboardTemp;
     }
 
+    /**
+     * @dev Called by player to join the tournament
+     * @notice Called by player to join the tournament
+     **/
     function joinTournament() external payable override {
         require(
             startTime + timeLimit > block.timestamp,
@@ -213,6 +291,10 @@ contract Tournament is ITournament, ReentrancyGuard {
         IToTheMooon(gameContractAddress).addPlayerToTournament(msg.sender);
     }
 
+    /**
+     * @dev Allows player to refill their attempts to record score
+     * @notice Allows player to refill their attempts to record score
+     **/
     function reFill() external payable override {
         require(
             startTime + timeLimit > block.timestamp,
@@ -233,11 +315,16 @@ contract Tournament is ITournament, ReentrancyGuard {
         playerStatsMap[msg.sender].attemptsLeft = 3;
     }
 
-    function recordScore(address _player, uint256 _score)
-        external
-        override
-        onlyApprovedCaller
-    {
+    /**
+     * @dev Allows approvedCaller to update a player's highscore after player submits it
+     * @notice Allows approvedCaller to update a player's highscore after player submits it
+     * @param _player player's address
+     * @param _score player's score
+     **/
+    function recordScore(
+        address _player,
+        uint256 _score
+    ) external override onlyApprovedCaller {
         require(
             startTime + timeLimit > block.timestamp,
             Errors.TOURNAMENT_HAS_ENDED
@@ -258,6 +345,11 @@ contract Tournament is ITournament, ReentrancyGuard {
         emit ScoreRecorded(_player, block.timestamp, _score);
     }
 
+    /**
+     * @dev Allows the approvedCaller to end the tournament after it's time limit is finished
+     * Calculates final prizes and stores in playerStatsMap storage mapping
+     * @notice Allows the approvedCaller to end the tournament after it's time limit is finished
+     **/
     function endTournament() external override onlyApprovedCaller {
         require(
             startTime + timeLimit < block.timestamp,
@@ -282,7 +374,11 @@ contract Tournament is ITournament, ReentrancyGuard {
         }
     }
 
-    function withdrawPrize() external override {
+    /**
+     * @dev Allows caller/player to withdraw their allocated prize after tournament has ended
+     * @notice Allows caller/player to withdraw their allocated prize after tournament has ended
+     **/
+    function withdrawPrize() external override nonReentrant {
         require(
             startTime + timeLimit < block.timestamp,
             Errors.TOURNAMENT_IS_LIVE
@@ -298,10 +394,18 @@ contract Tournament is ITournament, ReentrancyGuard {
         if (player.unclaimedPrize > 0) {
             uint256 temp = player.unclaimedPrize;
             player.unclaimedPrize = 0;
-            payable(msg.sender).transfer(temp);
+            (bool success, ) = msg.sender.call{value: temp}("");
+            require(success, "Transfer failed.");
+            // payable(msg.sender).transfer(temp);
         }
     }
 
+    /**
+     * @dev Returns "r" value for the Geometric progression series based rewards calculation
+     * Currently hardcoded based on number of players participating to distribute rewards fairly
+     * @param nPlayers Number of players participating in the tournament
+     * @return r "r" value
+     **/
     function getRValue(uint256 nPlayers) internal view returns (uint256) {
         if (nPlayers < 10) {
             return IToTheMooon(gameContractAddress).r_values(10);
@@ -320,6 +424,13 @@ contract Tournament is ITournament, ReentrancyGuard {
         }
     }
 
+    /**
+     * @dev Quicksort implementation to sort the leaderboard based on plater highscores
+     * @param leaderboardTemp Current unsorted leaderboard
+     * @param left left index
+     * @param right right index
+     * @return sortedLeaderboard Sorted leaderboard array
+     **/
     function quickSort(
         DataTypes.LeaderBoardEntry[] memory leaderboardTemp,
         int256 left,
@@ -348,6 +459,12 @@ contract Tournament is ITournament, ReentrancyGuard {
         return leaderboardTemp;
     }
 
+    /**
+     * @dev Returns the smaller of 2 numbers
+     * @param a number 1
+     * @param b number 2
+     * @return min minimum of a and b
+     **/
     function min(uint256 a, uint256 b) internal pure returns (uint256) {
         if (a > b) {
             return b;
@@ -355,6 +472,12 @@ contract Tournament is ITournament, ReentrancyGuard {
         return a;
     }
 
+    /**
+     * @dev Calculates a raised to b
+     * @param a base
+     * @param b exponent
+     * @return a_raisedTo_b a ^ b
+     **/
     function pow(uint256 a, uint256 b) internal pure returns (uint256) {
         uint256 ans = a;
 

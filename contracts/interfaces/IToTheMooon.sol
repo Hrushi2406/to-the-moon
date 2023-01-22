@@ -3,6 +3,12 @@ pragma solidity ^0.8.0;
 
 import {DataTypes} from "../utils/DataTypes.sol";
 
+/**
+ * @title IToTheMooon interface
+ * @author ToTheMooon
+ * @notice Interface of the ToTheMooon contract for the ToTheMooon game
+ * @dev Interface of the ToTheMooon contract for the ToTheMooon game
+ **/
 interface IToTheMooon {
     function getOwner() external view returns (address);
 
@@ -14,15 +20,14 @@ interface IToTheMooon {
 
     function r_values(uint) external view returns (uint);
 
-    function getJoinedTournamentsByPlayer(address player_)
-        external
-        view
-        returns (DataTypes.TournamentStruct[] memory);
+    function getJoinedTournamentsByPlayer(
+        address player_
+    ) external view returns (DataTypes.TournamentStruct[] memory);
 
-    function hasJoinedTournament(address _wallet, uint tournamentId)
-        external
-        view
-        returns (bool);
+    function hasJoinedTournament(
+        address _wallet,
+        uint tournamentId
+    ) external view returns (bool);
 
     function getUserName(address wallet_) external view returns (string memory);
 
