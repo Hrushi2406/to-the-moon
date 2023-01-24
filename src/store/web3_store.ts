@@ -74,11 +74,6 @@ const web3Store = (set: any, get: any) => ({
 
   recordHighscore: async (highscore: number) => {
     try {
-      // const data = await fetch("http://127.0.0.1:8000/current_tournament").then(
-      //   (resp) => resp.json()
-      // );
-
-      //console.log("DATA ", data);
 
       await fetch("https://to-the-mooon-admin.onrender.com/record_score", {
         // await fetch("http://127.0.0.1:8000/record_score", {
